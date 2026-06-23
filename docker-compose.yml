@@ -69,6 +69,29 @@ services:
       php-apirest:
         condition: service_started
 
+  # ── PHP FICHAS-DICOTECH (PHP 7.2) ───────────────────────────────────────────
+  php-fichas-dicotech:
+    build:
+      context: ./docker-config/php/fichas-dicotech
+      dockerfile: Dockerfile
+    container_name: php_fichas_dicotech
+    restart: unless-stopped
+    environment:
+      TZ: America/Mexico_City
+    volumes:
+      - ./projects:/var/www/html
+      - ./logs/php/fichas-dicotech:/var/log/php
+    networks:
+      - custom-network
+    extra_hosts:
+      - "fichas.dicotech.local.sagd.com.mx:host-gateway"
+      - "local.apirest.mx:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+      php-apirest:
+        condition: service_started
+
   # ── PHP SAGD (ZEND - PHP 7.2) ───────────────────────────────────────────
   php-sagd:
     build:
@@ -116,6 +139,29 @@ services:
       - custom-network
     extra_hosts:
       - "responsivo.local.zegucom.com.mx:host-gateway"
+      - "local.apirest.mx:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+      php-apirest:
+        condition: service_started
+
+  # ── PHP WAREHOUSE (Yii2 - PHP 7.2) ───────────────────────────────────────────
+  php-warehouse:
+    build:
+      context: ./docker-config/php/warehouse
+      dockerfile: Dockerfile
+    container_name: php_warehouse
+    restart: unless-stopped
+    environment:
+      TZ: America/Mexico_City
+    volumes:
+      - ./projects:/var/www/html
+      - ./logs/php/warehouse:/var/log/php
+    networks:
+      - custom-network
+    extra_hosts:
+      - "warehouse.local.sagd.com.mx:host-gateway"
       - "local.apirest.mx:host-gateway"
     depends_on:
       db:
