@@ -1,13 +1,11 @@
-# ── BASE DE PHP 7.2 (FPM) ─────────────────────────────────────────────────────
-FROM php:7.2-fpm
+# ── BASE DE PHP 7.3 (FPM) ─────────────────────────────────────────────────────
+# Clonamos exactamente la versión de producción encontrada en Zegucom
+FROM php:7.3-fpm
 
 LABEL authors="mflores"
 
-# ── 1. REPOSITORIOS HISTÓRICOS (BLINDAJE CONTRA ERRORES 404) ──────────────────
-# Esto fuerza a Docker a buscar paquetes en el archivo histórico de Debian
-RUN echo "deb http://archive.debian.org/debian/ buster main" > /etc/apt/sources.list \
-    && echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list \
-    && apt-get update && apt-get install -y \
+# ── 1. DEPENDENCIAS DEL SISTEMA ───────────────────────────────────────────────
+RUN apt-get update && apt-get install -y \
     git \
     unzip \
     curl \
@@ -16,15 +14,11 @@ RUN echo "deb http://archive.debian.org/debian/ buster main" > /etc/apt/sources.
     libicu-dev \
     libonig-dev \
     libxml2-dev \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
     --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ── 2. EXTENSIONES CRÍTICAS PARA YII2 ─────────────────────────────────────────
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) \
+# ── 2. EXTENSIONES CRÍTICAS PARA LA API ───────────────────────────────────────
+RUN docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_mysql \
     mysqli \
@@ -32,25 +26,27 @@ RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-di
     intl \
     mbstring \
     bcmath \
-    soap \
-    gd
+    soap
 
-# ── 3. COMPOSER (Versión 2 compatible con PHP 7.2) ────────────────────────────
+# ── 3. COMPOSER (Versión 2 compatible con PHP 7.3) ────────────────────────────
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# ── 4. XDEBUG (Versión 2.9.8) ────────────────────────────────────────────────
+# ── 4. XDEBUG (Para PHP 7.3 la versión 2.9.8 mantiene compatibilidad perfecta)
 RUN pecl install xdebug-2.9.8 \
     && docker-php-ext-enable xdebug
 
 # ── 5. CONFIGURACIÓN DE PHP ───────────────────────────────────────────────────
+# Busca el php.ini a su lado en la carpeta apirest y lo inyecta al contenedor
 COPY ./php.ini /usr/local/etc/php/conf.d/custom.ini
 
-# ── 6. NODE.JS (Herramientas de compilación) ─────────────────────────────────
+# ── 6. NODE.JS (Herramientas de compilación globales) ─────────────────────────
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs --no-install-recommends \
     && npm install -g sass terser \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ── 7. DIRECTORIO DE TRABAJO Y PERMISOS ──────────────────────────────────────
+# ── 7. DIRECTORIO DE TRABAJO ──────────────────────────────────────────────────
 WORKDIR /var/www/html
+
+# Evitamos problemas de permisos con Linux mapeando tu usuario local
 RUN usermod -u 1000 www-data
