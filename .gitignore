@@ -1,0 +1,20 @@
+# Entorno — nunca se sube el .env real
+.env
+
+# Datos de la base — solo se sube el placeholder
+data/*
+!data/.gitkeep
+
+# Logs — solo se sube el placeholder
+logs/*
+!logs/.gitkeep
+
+# Código fuente — se clona por separado
+projects/*
+!projects/.gitkeep
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
