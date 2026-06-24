@@ -107,14 +107,15 @@ services:
     networks:
       - custom-network
     extra_hosts:
+      - "amazon.local.sagd.com.mx:host-gateway"
       - "arboledas.local.sagd.com.mx:host-gateway"
       - "cdmx.local.sagd.com.mx:host-gateway"
       - "dicoags2.local.sagd.com.mx:host-gateway"
       - "dropship.local.sagd.com.mx:host-gateway"
       - "gdl.local.sagd.com.mx:host-gateway"
       - "internet.local.sagd.com.mx:host-gateway"
+      - "leon2.local.sagd.com.mx:host-gateway"
       - "santafe.local.sagd.com.mx:host-gateway"
-      - "warehouse.local.sagd.com.mx:host-gateway"
       - "zacatecas.local.sagd.com.mx:host-gateway"
       - "local.apirest.mx:host-gateway"
     depends_on:
